@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpenseWise — Smart Expense Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-wallet"></i>
+                <span>ExpenseWise</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" class="nav-link active" data-section="dashboard"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
+            <li><a href="#" class="nav-link" data-section="add-expense"><i class="fas fa-plus-circle"></i><span>Add Expense</span></a></li>
+            <li><a href="#" class="nav-link" data-section="transactions"><i class="fas fa-list-alt"></i><span>Transactions</span></a></li>
+            <li><a href="#" class="nav-link" data-section="analytics"><i class="fas fa-chart-pie"></i><span>Analytics</span></a></li>
+            <li><a href="#" class="nav-link" data-section="budget"><i class="fas fa-bullseye"></i><span>Budget & Savings</span></a></li>
+            <li><a href="#" class="nav-link" data-section="advisor"><i class="fas fa-lightbulb"></i><span>Smart Advisor</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="btn-export" id="exportBtn" title="Export Data">
+                <i class="fas fa-download"></i><span>Export CSV</span>
+            </button>
+            <button class="btn-import" id="importBtn" title="Import Data">
+                <i class="fas fa-upload"></i><span>Import CSV</span>
+            </button>
+            <input type="file" id="importFile" accept=".csv" style="display:none">
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ===================== DASHBOARD ===================== -->
+        <section class="section active" id="section-dashboard">
+            <div class="section-header">
+                <h1><i class="fas fa-th-large"></i> Dashboard</h1>
+                <div class="date-display" id="currentDate"></div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="card card-today">
+                    <div class="card-icon"><i class="fas fa-calendar-day"></i></div>
+                    <div class="card-info">
+                        <span class="card-label">Today</span>
+                        <span class="card-amount" id="todayTotal">₹0</span>
+                    </div>
+                </div>
+                <div class="card card-week">
+                    <div class="card-icon"><i class="fas fa-calendar-week"></i></div>
+                    <div class="card-info">
+                        <span class="card-label">This Week</span>
+                        <span class="card-amount" id="weekTotal">₹0</span>
+                    </div>
+                </div>
+                <div class="card card-month">
+                    <div class="card-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="card-info">
+                        <span class="card-label">This Month</span>
+                        <span class="card-amount" id="monthTotal">₹0</span>
+                    </div>
+                </div>
+                <div class="card card-savings">
+                    <div class="card-icon"><i class="fas fa-piggy-bank"></i></div>
+                    <div class="card-info">
+                        <span class="card-label">Savings This Month</span>
+                        <span class="card-amount" id="savingsTotal">₹0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <div class="chart-container">
+                    <h3>Category Breakdown</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Daily Spending Trend</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="recent-transactions">
+                <div class="section-subheader">
+                    <h3>Recent Transactions</h3>
+                    <a href="#" class="view-all" data-section="transactions">View All →</a>
+                </div>
+                <div class="transaction-list" id="recentTransactions"></div>
+            </div>
+
+            <!-- Quick Tips Banner -->
+            <div class="quick-tip" id="quickTip">
+                <i class="fas fa-lightbulb"></i>
+                <span id="quickTipText">Start adding expenses to get personalized savings tips!</span>
+            </div>
+        </section>
+
+        <!-- ===================== ADD EXPENSE ===================== -->
+        <section class="section" id="section-add-expense">
+            <div class="section-header">
+                <h1><i class="fas fa-plus-circle"></i> Add Expense</h1>
+            </div>
+            <div class="form-container">
+                <form id="expenseForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expenseDate"><i class="fas fa-calendar"></i> Date</label>
+                            <input type="date" id="expenseDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseAmount"><i class="fas fa-rupee-sign"></i> Amount</label>
+                            <input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expenseCategory"><i class="fas fa-tag"></i> Category</label>
+                            <select id="expenseCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="food">🍕 Food & Groceries</option>
+                                <option value="transport">🚗 Transportation</option>
+                                <option value="rent">🏠 Rent / Housing</option>
+                                <option value="utilities">💡 Utilities (Electric, Water, Gas)</option>
+                                <option value="internet">📡 Internet & Phone</option>
+                                <option value="entertainment">🎬 Entertainment</option>
+                                <option value="shopping">🛍️ Shopping & Clothing</option>
+                                <option value="health">🏥 Health & Medical</option>
+                                <option value="education">📚 Education</option>
+                                <option value="personal">💇 Personal Care</option>
+                                <option value="subscriptions">📺 Subscriptions</option>
+                                <option value="dining">🍽️ Dining Out</option>
+                                <option value="fuel">⛽ Fuel</option>
+                                <option value="emi">🏦 EMI / Loans</option>
+                                <option value="insurance">🛡️ Insurance</option>
+                                <option value="gifts">🎁 Gifts & Donations</option>
+                                <option value="travel">✈️ Travel</option>
+                                <option value="misc">📦 Miscellaneous</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expensePayment"><i class="fas fa-credit-card"></i> Payment Method</label>
+                            <select id="expensePayment">
+                                <option value="cash">💵 Cash</option>
+                                <option value="upi">📱 UPI</option>
+                                <option value="debit">💳 Debit Card</option>
+                                <option value="credit">💳 Credit Card</option>
+                                <option value="netbanking">🏦 Net Banking</option>
+                                <option value="wallet">👛 Wallet</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="expenseNote"><i class="fas fa-sticky-note"></i> Note / Description</label>
+                        <input type="text" id="expenseNote" placeholder="e.g., Monthly groceries from BigBasket">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Add Expense</button>
+                        <button type="reset" class="btn btn-secondary"><i class="fas fa-redo"></i> Reset</button>
+                    </div>
+                </form>
+
+                <!-- Quick Add Presets -->
+                <div class="quick-add">
+                    <h3>⚡ Quick Add</h3>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-category="food" data-amount="50" data-note="Tea/Coffee">☕ Tea ₹50</button>
+                        <button class="preset-btn" data-category="food" data-amount="100" data-note="Snack">🍿 Snack ₹100</button>
+                        <button class="preset-btn" data-category="transport" data-amount="30" data-note="Auto/Bus fare">🚌 Bus ₹30</button>
+                        <button class="preset-btn" data-category="fuel" data-amount="500" data-note="Petrol">⛽ Petrol ₹500</button>
+                        <button class="preset-btn" data-category="dining" data-amount="200" data-note="Lunch outside">🍽️ Lunch ₹200</button>
+                        <button class="preset-btn" data-category="food" data-amount="150" data-note="Breakfast">🥪 Breakfast ₹150</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== TRANSACTIONS ===================== -->
+        <section class="section" id="section-transactions">
+            <div class="section-header">
+                <h1><i class="fas fa-list-alt"></i> Transactions</h1>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="view-controls">
+                <div class="view-tabs">
+                    <button class="view-tab active" data-view="daily">Daily</button>
+                    <button class="view-tab" data-view="weekly">Weekly</button>
+                    <button class="view-tab" data-view="monthly">Monthly</button>
+                    <button class="view-tab" data-view="all">All</button>
+                </div>
+                <div class="filter-controls">
+                    <select id="filterCategory">
+                        <option value="all">All Categories</option>
+                        <option value="food">🍕 Food & Groceries</option>
+                        <option value="transport">🚗 Transportation</option>
+                        <option value="rent">🏠 Rent / Housing</option>
+                        <option value="utilities">💡 Utilities</option>
+                        <option value="internet">📡 Internet & Phone</option>
+                        <option value="entertainment">🎬 Entertainment</option>
+                        <option value="shopping">🛍️ Shopping</option>
+                        <option value="health">🏥 Health</option>
+                        <option value="education">📚 Education</option>
+                        <option value="personal">💇 Personal Care</option>
+                        <option value="subscriptions">📺 Subscriptions</option>
+                        <option value="dining">🍽️ Dining Out</option>
+                        <option value="fuel">⛽ Fuel</option>
+                        <option value="emi">🏦 EMI / Loans</option>
+                        <option value="insurance">🛡️ Insurance</option>
+                        <option value="gifts">🎁 Gifts</option>
+                        <option value="travel">✈️ Travel</option>
+                        <option value="misc">📦 Misc</option>
+                    </select>
+                    <input type="month" id="filterMonth">
+                    <button class="btn btn-sm btn-danger" id="clearFilters"><i class="fas fa-times"></i> Clear</button>
+                </div>
+            </div>
+
+            <!-- Transaction Summary Bar -->
+            <div class="transaction-summary-bar">
+                <span id="txnCount">0 transactions</span>
+                <span id="txnTotal">Total: ₹0</span>
+            </div>
+
+            <!-- Transaction Table -->
+            <div class="table-container">
+                <table class="expense-table" id="expenseTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Payment</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseTableBody">
+                    </tbody>
+                </table>
+                <div class="empty-state" id="emptyTransactions" style="display:none;">
+                    <i class="fas fa-receipt"></i>
+                    <p>No transactions found</p>
+                    <a href="#" class="btn btn-primary" data-section="add-expense">Add Your First Expense</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== ANALYTICS ===================== -->
+        <section class="section" id="section-analytics">
+            <div class="section-header">
+                <h1><i class="fas fa-chart-pie"></i> Analytics</h1>
+                <select id="analyticsMonth" class="month-selector"></select>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="chart-container large">
+                    <h3>Monthly Category Breakdown</h3>
+                    <canvas id="analyticsPieChart"></canvas>
+                </div>
+                <div class="chart-container large">
+                    <h3>Weekly Comparison</h3>
+                    <canvas id="weeklyBarChart"></canvas>
+                </div>
+                <div class="chart-container large">
+                    <h3>Daily Spending Pattern</h3>
+                    <canvas id="dailyLineChart"></canvas>
+                </div>
+                <div class="chart-container large">
+                    <h3>Month-over-Month Comparison</h3>
+                    <canvas id="monthCompareChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Spending Categories -->
+            <div class="top-spending">
+                <h3>📊 Top Spending Categories</h3>
+                <div class="spending-bars" id="spendingBars"></div>
+            </div>
+        </section>
+
+        <!-- ===================== BUDGET & SAVINGS ===================== -->
+        <section class="section" id="section-budget">
+            <div class="section-header">
+                <h1><i class="fas fa-bullseye"></i> Budget & Savings</h1>
+            </div>
+
+            <!-- Income & Savings Setup -->
+            <div class="budget-setup">
+                <div class="setup-card">
+                    <h3><i class="fas fa-money-bill-wave"></i> Monthly Income</h3>
+                    <div class="income-input">
+                        <span class="currency">₹</span>
+                        <input type="number" id="monthlyIncome" placeholder="Enter your monthly income" min="0">
+                        <button class="btn btn-primary btn-sm" id="saveIncome">Save</button>
+                    </div>
+                </div>
+                <div class="setup-card">
+                    <h3><i class="fas fa-piggy-bank"></i> Savings Target (%)</h3>
+                    <div class="savings-slider">
+                        <input type="range" id="savingsTarget" min="5" max="60" value="20">
+                        <span class="slider-value" id="savingsTargetValue">20%</span>
+                    </div>
+                    <p class="savings-amount">Target: ₹<span id="savingsTargetAmount">0</span>/month</p>
+                </div>
+            </div>
+
+            <!-- Savings Progress -->
+            <div class="savings-progress-section">
+                <h3>💰 This Month's Savings Progress</h3>
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <span>Income: ₹<span id="incomeDisplay">0</span></span>
+                        <span>Spent: ₹<span id="spentDisplay">0</span></span>
+                        <span>Remaining: ₹<span id="remainingDisplay">0</span></span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="savingsProgressBar"></div>
+                        <div class="progress-target" id="savingsTargetLine"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>0%</span>
+                        <span id="progressPercent">0% spent</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Budgets -->
+            <div class="category-budgets">
+                <h3>📋 Category Budgets</h3>
+                <p class="subtitle">Set spending limits per category to stay on track</p>
+                <div class="budget-grid" id="budgetGrid"></div>
+                <button class="btn btn-primary" id="saveBudgets"><i class="fas fa-save"></i> Save Budgets</button>
+            </div>
+
+            <!-- Investment Suggestions -->
+            <div class="investment-section">
+                <h3>📈 Investment Suggestions</h3>
+                <div class="investment-cards" id="investmentCards">
+                    <div class="invest-card">
+                        <div class="invest-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);"><i class="fas fa-landmark"></i></div>
+                        <h4>Public Provident Fund (PPF)</h4>
+                        <p class="invest-return">~7.1% p.a.</p>
+                        <p>Tax-free returns, 15-year lock-in. Great for long-term wealth building with zero risk.</p>
+                        <span class="invest-tag safe">Low Risk</span>
+                    </div>
+                    <div class="invest-card">
+                        <div class="invest-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);"><i class="fas fa-chart-line"></i></div>
+                        <h4>SIP in Mutual Funds</h4>
+                        <p class="invest-return">~12-15% p.a.</p>
+                        <p>Start with ₹500/month. Index funds give market returns with low fees. Best for 5+ year goals.</p>
+                        <span class="invest-tag moderate">Moderate Risk</span>
+                    </div>
+                    <div class="invest-card">
+                        <div class="invest-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"><i class="fas fa-building"></i></div>
+                        <h4>Fixed Deposits</h4>
+                        <p class="invest-return">~6.5-7.5% p.a.</p>
+                        <p>Safe, guaranteed returns. Good for emergency fund or short-term goals (1-3 years).</p>
+                        <span class="invest-tag safe">Low Risk</span>
+                    </div>
+                    <div class="invest-card">
+                        <div class="invest-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"><i class="fas fa-coins"></i></div>
+                        <h4>Recurring Deposit</h4>
+                        <p class="invest-return">~6-7% p.a.</p>
+                        <p>Fixed monthly deposits, guaranteed returns. Perfect for disciplined monthly savings habit.</p>
+                        <span class="invest-tag safe">Low Risk</span>
+                    </div>
+                    <div class="invest-card">
+                        <div class="invest-icon" style="background: linear-gradient(135deg, #fa709a, #fee140);"><i class="fas fa-shield-alt"></i></div>
+                        <h4>NPS (National Pension)</h4>
+                        <p class="invest-return">~9-12% p.a.</p>
+                        <p>Extra ₹50K tax deduction under 80CCD(1B). Good for retirement planning with equity exposure.</p>
+                        <span class="invest-tag moderate">Moderate Risk</span>
+                    </div>
+                    <div class="invest-card">
+                        <div class="invest-icon" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);"><i class="fas fa-gold"></i></div>
+                        <h4>Digital Gold / Gold ETF</h4>
+                        <p class="invest-return">~8-10% p.a.</p>
+                        <p>Hedge against inflation. Allocate 5-10% of portfolio. Buy in small amounts regularly.</p>
+                        <span class="invest-tag moderate">Moderate Risk</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SMART ADVISOR ===================== -->
+        <section class="section" id="section-advisor">
+            <div class="section-header">
+                <h1><i class="fas fa-lightbulb"></i> Smart Advisor</h1>
+            </div>
+
+            <!-- Spending Analysis -->
+            <div class="advisor-section">
+                <h3>🔍 Spending Analysis — This Month</h3>
+                <div class="analysis-cards" id="analysisCards"></div>
+            </div>
+
+            <!-- Reduction Suggestions -->
+            <div class="advisor-section">
+                <h3>✂️ Where to Reduce Expenses</h3>
+                <div class="suggestion-list" id="reductionSuggestions"></div>
+            </div>
+
+            <!-- Savings Tips -->
+            <div class="advisor-section">
+                <h3>💡 Smart Savings Tips</h3>
+                <div class="tips-grid" id="savingsTips">
+                    <div class="tip-card">
+                        <div class="tip-number">1</div>
+                        <h4>The 50/30/20 Rule</h4>
+                        <p>Allocate 50% of income to needs, 30% to wants, and 20% to savings. This creates a balanced financial life.</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-number">2</div>
+                        <h4>24-Hour Rule</h4>
+                        <p>Before any non-essential purchase over ₹500, wait 24 hours. Most impulse purchases won't seem necessary the next day.</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-number">3</div>
+                        <h4>Meal Prep Sundays</h4>
+                        <p>Cooking meals at home saves 60-70% compared to eating out. Prep meals on Sunday for the whole week.</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-number">4</div>
+                        <h4>Audit Subscriptions</h4>
+                        <p>Review all recurring subscriptions monthly. Cancel unused ones — most people waste ₹500-2000/month on forgotten subscriptions.</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-number">5</div>
+                        <h4>Use Public Transport</h4>
+                        <p>Switch to public transport or carpooling 2-3 days a week. Save ₹3000-5000/month on fuel and parking.</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-number">6</div>
+                        <h4>Emergency Fund First</h4>
+                        <p>Build 3-6 months of expenses as emergency fund before investing. Use a high-interest savings account or liquid fund.</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-number">7</div>
+                        <h4>Automate Savings</h4>
+                        <p>Set up auto-debit on salary day to move savings amount first. "Pay yourself first" before spending on anything else.</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-number">8</div>
+                        <h4>No-Spend Challenge</h4>
+                        <p>Try 1 no-spend day per week. Only cover essentials. You'll discover how much you spend on things you don't need.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Comparison Insights -->
+            <div class="advisor-section">
+                <h3>📊 Month-over-Month Insights</h3>
+                <div class="insights-list" id="monthInsights"></div>
+            </div>
+
+            <!-- Personalized Recommendations -->
+            <div class="advisor-section">
+                <h3>🎯 Personalized Recommendations</h3>
+                <div class="recommendations" id="personalRecs"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Expense</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="editDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="number" id="editAmount" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="editCategory" required>
+                            <option value="food">🍕 Food & Groceries</option>
+                            <option value="transport">🚗 Transportation</option>
+                            <option value="rent">🏠 Rent / Housing</option>
+                            <option value="utilities">💡 Utilities</option>
+                            <option value="internet">📡 Internet & Phone</option>
+                            <option value="entertainment">🎬 Entertainment</option>
+                            <option value="shopping">🛍️ Shopping</option>
+                            <option value="health">🏥 Health</option>
+                            <option value="education">📚 Education</option>
+                            <option value="personal">💇 Personal Care</option>
+                            <option value="subscriptions">📺 Subscriptions</option>
+                            <option value="dining">🍽️ Dining Out</option>
+                            <option value="fuel">⛽ Fuel</option>
+                            <option value="emi">🏦 EMI / Loans</option>
+                            <option value="insurance">🛡️ Insurance</option>
+                            <option value="gifts">🎁 Gifts</option>
+                            <option value="travel">✈️ Travel</option>
+                            <option value="misc">📦 Miscellaneous</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment</label>
+                        <select id="editPayment">
+                            <option value="cash">💵 Cash</option>
+                            <option value="upi">📱 UPI</option>
+                            <option value="debit">💳 Debit Card</option>
+                            <option value="credit">💳 Credit Card</option>
+                            <option value="netbanking">🏦 Net Banking</option>
+                            <option value="wallet">👛 Wallet</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <input type="text" id="editNote">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Expense added successfully!</span>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
